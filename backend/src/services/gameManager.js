@@ -18,6 +18,8 @@ class GameManager {
 
     // Cambiar estado
     await updateGameStatus(gameId, 'IN_PROGRESS');
+    // ✅ TTL de 4h para partidas activas (limpieza automática de partidas abandonadas)
+    await expireGame(gameId, 60 * 60 * 4);
 
     if (meta.mode === 'TIMED' && meta.duration > 0) {
       // Iniciar el temporizador centralizado
@@ -43,6 +45,10 @@ class GameManager {
           io.to(gameId).emit('timer:sync', { timeLeft: currentTimer });
         }
       }, 1000);
+
+      // ✅ .unref() permite que Jest y el proceso Node.js salgan limpiamente
+      // incluso si el timer sigue activo (no bloquea el event loop de salida)
+      intervalId.unref();
 
       this.timers.set(gameId, intervalId);
     }

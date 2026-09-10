@@ -79,7 +79,9 @@ async function handleJoin(socket, io, payload) {
     });
 
     // 6. Iniciar la partida (y el timer si corresponde)
-    await gameManager.startGame(gameId, io);
+    if (meta.status === 'WAITING') {
+      await gameManager.startGame(gameId, io);
+    }
   } catch (error) {
     console.error('[Socket] Error en handleJoin:', error);
     socket.emit('error', { message: 'Error interno al unirse a la partida.' });
@@ -186,6 +188,8 @@ async function handleCellUpdate(socket, io, payload) {
 
 /**
  * Maneja la desconexión de un socket.
+ * Limpia el mapa de sockets Y las entradas de rate-limit del chat
+ * para evitar fugas de memoria en partidas de larga duración.
  */
 function handleDisconnect(socket, io) {
   const data = socketDataMap.get(socket.id);
@@ -194,6 +198,8 @@ function handleDisconnect(socket, io) {
     // Difundir a la room que el jugador se desconectó
     socket.to(gameId).emit('player:left', { playerId, name });
     socketDataMap.delete(socket.id);
+    // ✅ Limpiar rate-limit del chat para evitar fuga de memoria
+    chatRateMap.delete(`${gameId}:${playerId}`);
   }
   console.log(`[Socket] Cliente desconectado: ${socket.id}`);
 }
