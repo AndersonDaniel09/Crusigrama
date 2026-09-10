@@ -9,6 +9,14 @@ const gameManager = require('../../services/gameManager');
 // Útil en handleDisconnect. (En un entorno escalado, esto requeriría Redis Pub/Sub o el adaptador de Redis de Socket.io).
 const socketDataMap = new Map();
 
+// ─── Rate Limiting simple para el chat ───────────────────────────────────────
+// Mapa: playerId → array de timestamps (ms) de los últimos mensajes.
+const chatRateMap = new Map();
+
+const CHAT_MAX_LENGTH   = 200;       // caracteres máximos por mensaje
+const CHAT_MAX_MSGS     = 5;         // máx mensajes permitidos...
+const CHAT_WINDOW_MS    = 5_000;     // ...dentro de esta ventana de tiempo (ms)
+
 /**
  * Calcula el ranking en vivo y lo difunde a toda la room.
  * @param {string} gameId
@@ -190,8 +198,83 @@ function handleDisconnect(socket, io) {
   console.log(`[Socket] Cliente desconectado: ${socket.id}`);
 }
 
+/**
+ * Maneja un mensaje de chat enviado por un jugador.
+ * Evento: chat:message   Payload: { gameId, token, text }
+ * Difunde: chat:message  Payload: { name, text, timestamp }
+ *
+ * Reglas:
+ *  - El token debe ser válido y pertenecer a la partida.
+ *  - El texto no puede estar vacío ni superar CHAT_MAX_LENGTH caracteres.
+ *  - Rate limit: CHAT_MAX_MSGS mensajes por CHAT_WINDOW_MS ms por jugador.
+ *  - El chat es efímero (no se persiste en DB).
+ */
+function handleChat(socket, io, payload) {
+  try {
+    const { gameId, token, text } = payload || {};
+
+    if (!gameId || !token || !text) {
+      return socket.emit('error', { message: 'Datos incompletos para el chat.' });
+    }
+
+    // 1. Autenticar token
+    let decoded;
+    try {
+      decoded = verifyToken(token);
+    } catch {
+      return socket.emit('error', { message: 'Token inválido.' });
+    }
+
+    if (decoded.gameId !== gameId) {
+      return socket.emit('error', { message: 'Token no pertenece a esta partida.' });
+    }
+
+    // 2. Validar longitud del texto
+    const trimmed = typeof text === 'string' ? text.trim() : '';
+    if (trimmed.length === 0) {
+      return socket.emit('error', { message: 'El mensaje no puede estar vacío.' });
+    }
+    if (trimmed.length > CHAT_MAX_LENGTH) {
+      return socket.emit('error', {
+        message: `El mensaje no puede superar ${CHAT_MAX_LENGTH} caracteres.`,
+      });
+    }
+
+    // 3. Rate limiting
+    const now = Date.now();
+    const key = `${gameId}:${decoded.playerId}`;
+    const timestamps = (chatRateMap.get(key) || []).filter((t) => now - t < CHAT_WINDOW_MS);
+
+    if (timestamps.length >= CHAT_MAX_MSGS) {
+      return socket.emit('error', {
+        message: `Demasiados mensajes. Espera unos segundos antes de continuar.`,
+      });
+    }
+
+    timestamps.push(now);
+    chatRateMap.set(key, timestamps);
+
+    // 4. Difundir a TODA la room (incluyendo al emisor)
+    io.to(gameId).emit('chat:message', {
+      playerId: decoded.playerId,
+      name: decoded.name,
+      text: trimmed,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('[Socket] Error en handleChat:', error);
+    socket.emit('error', { message: 'Error interno en el chat.' });
+  }
+}
+
 module.exports = {
   handleJoin,
   handleCellUpdate,
   handleDisconnect,
+  handleChat,
+  // Exponer constantes para los tests
+  _CHAT_MAX_LENGTH: CHAT_MAX_LENGTH,
+  _CHAT_MAX_MSGS: CHAT_MAX_MSGS,
+  _CHAT_WINDOW_MS: CHAT_WINDOW_MS,
+  _chatRateMap: chatRateMap,
 };
