@@ -3,6 +3,7 @@
 const prisma = require('../../db/prismaClient');
 const { verifyToken } = require('../../utils/token');
 const { getGameMeta, getGrid, getPlayers, updateCell } = require('../../redis/gameState');
+const gameManager = require('../../services/gameManager');
 
 // Para llevar un registro en memoria de a qué partida pertenece cada socket.
 // Útil en handleDisconnect. (En un entorno escalado, esto requeriría Redis Pub/Sub o el adaptador de Redis de Socket.io).
@@ -55,6 +56,9 @@ async function handleJoin(socket, io, payload) {
       grid,
       players,
     });
+
+    // 6. Iniciar la partida (y el timer si corresponde)
+    await gameManager.startGame(gameId, io);
   } catch (error) {
     console.error('[Socket] Error en handleJoin:', error);
     socket.emit('error', { message: 'Error interno al unirse a la partida.' });
@@ -143,6 +147,11 @@ async function handleCellUpdate(socket, io, payload) {
       playerId: decoded.playerId,
       correct: isCorrect,
     });
+
+    // 5. Verificar condición de victoria si la letra es correcta
+    if (isCorrect) {
+      await gameManager.checkWinCondition(gameId, io);
+    }
   } catch (error) {
     console.error('[Socket] Error en handleCellUpdate:', error);
     socket.emit('error', { message: 'Error interno al actualizar la celda.' });
