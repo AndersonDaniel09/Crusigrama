@@ -1,0 +1,100 @@
+/* ================================================================
+   Design System — Crucigrama Multijugador
+   ================================================================ */
+
+/* ── Variables ──────────────────────────────────────────────── */
+:root {
+  /* Paleta principal */
+  --color-bg:          #0d0f1a;
+  --color-surface:     #161929;
+  --color-surface-2:   #1e2235;
+  --color-border:      rgba(255,255,255,0.08);
+
+  /* Acento: violeta→cyan */
+  --color-primary:     #7c3aed;
+  --color-primary-h:   #6d28d9;
+  --color-accent:      #06b6d4;
+  --color-accent-h:    #0891b2;
+
+  /* Texto */
+  --color-text:        #f1f5f9;
+  --color-text-muted:  #94a3b8;
+
+  /* Estados */
+  --color-success:     #10b981;
+  --color-warning:     #f59e0b;
+  --color-error:       #ef4444;
+
+  /* Tipografía */
+  --font-base:   'Inter', system-ui, sans-serif;
+  --font-display:'Space Grotesk', sans-serif;
+
+  /* Espaciado */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  /* Sombras */
+  --shadow-glow: 0 0 32px rgba(124,58,237,0.25);
+}
+
+/* ── Reset ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-base);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Utilidades globales ─────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.4rem;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-base);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  color: #fff;
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 48px rgba(124,58,237,0.4);
+}
+
+.btn-secondary {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  background: var(--color-border);
+}
+
+/* ── Scrollbar personalizada ─────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-primary); border-radius: 99px; }

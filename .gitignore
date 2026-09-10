@@ -1,0 +1,34 @@
+# Archivos de entorno (¡NUNCA subir al repo!)
+.env
+.env.local
+.env.*.local
+
+# Dependencias
+node_modules/
+**/node_modules/
+
+# Builds
+dist/
+build/
+.vite/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# Test coverage
+coverage/
+
+# Docker volumes (si usas bind mounts)
+postgres_data/
+redis_data/
