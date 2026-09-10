@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Categorías temáticas (ej. "Ciencia", "Historia")
+model Category {
+  id          String      @id @default(uuid())
+  name        String      @unique
+  description String?
+  crosswords  Crossword[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+// Un tablero de crucigrama específico dentro de una categoría
+model Crossword {
+  id          String          @id @default(uuid())
+  categoryId  String
+  category    Category        @relation(fields: [categoryId], references: [id])
+  name        String          // ej. "Ciencia Nivel 1"
+  words       CrosswordWord[]
+  games       Game[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+// Las palabras y pistas que componen un crucigrama
+model CrosswordWord {
+  id          String    @id @default(uuid())
+  crosswordId String
+  crossword   Crossword @relation(fields: [crosswordId], references: [id], onDelete: Cascade)
+  word        String    // La palabra correcta
+  clue        String    // La pista para adivinarla
+  direction   Direction // Horizontal (ACROSS) o Vertical (DOWN)
+  row         Int       // Fila de inicio en el grid (0-indexado)
+  col         Int       // Columna de inicio en el grid (0-indexado)
+}
+
+enum Direction {
+  ACROSS
+  DOWN
+}
+
+// Una partida multijugador creada por un usuario
+model Game {
+  id          String     @id @default(uuid())
+  crosswordId String
+  crossword   Crossword  @relation(fields: [crosswordId], references: [id])
+  mode        GameMode   // Libre o Contrarreloj
+  status      GameStatus @default(WAITING)
+  duration    Int?       // Duración en segundos (solo para modo TIMED)
+  players     Player[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  finishedAt  DateTime?
+}
+
+enum GameMode {
+  TIMED
+  FREE
+}
+
+enum GameStatus {
+  WAITING
+  IN_PROGRESS
+  FINISHED
+}
+
+// Un jugador invitado que se ha unido a una partida
+model Player {
+  id          String   @id @default(uuid())
+  gameId      String
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  name        String   // Nombre elegido por el invitado
+  score       Int      @default(0) // Puntuación / Aciertos
+  timeSpent   Int      @default(0) // Tiempo empleado (útil para desempates)
+  joinedAt    DateTime @default(now())
+
+  // Evita que dos jugadores usen el mismo nombre en la misma partida
+  @@unique([gameId, name])
+}
