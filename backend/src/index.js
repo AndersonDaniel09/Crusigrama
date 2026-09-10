@@ -20,13 +20,10 @@ const io = new Server(httpServer, {
 // Adjuntar io a app para acceso desde los routers si es necesario
 app.set('io', io);
 
-io.on('connection', (socket) => {
-  // Placeholder — lógica completa en Etapa 5
-  console.log(`[socket] cliente conectado: ${socket.id}`);
-  socket.on('disconnect', () => {
-    console.log(`[socket] cliente desconectado: ${socket.id}`);
-  });
-});
+const { initSocket } = require('./socket');
+
+// Inicializar todos los handlers de eventos de Socket.io
+initSocket(io);
 
 // ── Start ────────────────────────────────────────────────────
 httpServer.listen(PORT, () => {
