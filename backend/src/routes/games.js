@@ -3,7 +3,8 @@
 const { Router } = require('express');
 const { v4: uuidv4 } = require('uuid');
 const prisma = require('../db/prismaClient');
-const { createGameState, getGameMeta } = require('../redis/gameState');
+const { createGameState, getGameMeta, addPlayer, getPlayers } = require('../redis/gameState');
+const { generateToken } = require('../utils/token');
 
 const router = Router();
 
@@ -151,6 +152,102 @@ router.get('/:gameId', async (req, res, next) => {
       createdAt: game.createdAt,
     });
   } catch (err) {
+    next(err);
+  }
+});
+
+// ─── POST /api/games/:gameId/join ─────────────────────────────────────────────────
+/**
+ * Un invitado se une a una partida ingresando solo su nombre.
+ * Body: { name: string }
+ * Respuesta: { playerId, name, gameId, token, crossword }
+ */
+router.post('/:gameId/join', async (req, res, next) => {
+  try {
+    const { gameId } = req.params;
+    const { name } = req.body;
+
+    // 1. Validar el nombre
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      return res.status(400).json({ error: 'name es requerido y no puede estar vacío.' });
+    }
+    const trimmedName = name.trim();
+
+    // 2. Verificar que la partida exista en Prisma
+    const game = await prisma.game.findUnique({
+      where: { id: gameId },
+      include: {
+        crossword: {
+          include: { words: true },
+        },
+      },
+    });
+
+    if (!game) {
+      return res.status(404).json({ error: `Partida con id "${gameId}" no encontrada.` });
+    }
+
+    // 3. Verificar el estado en vivo desde Redis
+    const liveState = await getGameMeta(gameId);
+    const currentStatus = liveState?.status ?? game.status;
+
+    if (currentStatus === 'FINISHED') {
+      return res.status(409).json({ error: 'No puedes unirte a una partida que ya ha terminado.' });
+    }
+
+    // 4. Verificar que el nombre no esté ya en uso en esta partida (Redis es la fuente de verdad en vivo)
+    const existingPlayers = await getPlayers(gameId);
+    const nameAlreadyTaken = existingPlayers.some(
+      (p) => p.name.toLowerCase() === trimmedName.toLowerCase()
+    );
+
+    if (nameAlreadyTaken) {
+      return res.status(409).json({ error: `El nombre "${trimmedName}" ya está en uso en esta partida.` });
+    }
+
+    // 5. Crear el Player en Prisma (persistencia permanente)
+    const player = await prisma.player.create({
+      data: {
+        gameId,
+        name: trimmedName,
+      },
+    });
+
+    // 6. Registrar el jugador en Redis (estado en vivo)
+    await addPlayer(gameId, player.id, { name: trimmedName });
+
+    // 7. Generar token de sesión
+    const token = generateToken({
+      playerId: player.id,
+      gameId,
+      name: trimmedName,
+    });
+
+    // 8. Responder con token + datos del crucigrama (para que el frontend construya el grid)
+    return res.status(201).json({
+      playerId: player.id,
+      name: trimmedName,
+      gameId,
+      token,
+      crossword: {
+        id: game.crossword.id,
+        name: game.crossword.name,
+        words: game.crossword.words.map((w) => ({
+          id: w.id,
+          clue: w.clue,
+          direction: w.direction,
+          row: w.row,
+          col: w.col,
+          // NO enviamos 'word' (la respuesta correcta) al cliente
+          length: w.word.length,
+        })),
+      },
+    });
+  } catch (err) {
+    // Capturar violación de unique constraint (nombre duplicado a nivel DB)
+    if (err.code === 'P2002') {
+      return res.status(409).json({ error: 'El nombre ya está en uso en esta partida.' });
+    }
     next(err);
   }
 });

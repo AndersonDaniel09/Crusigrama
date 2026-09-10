@@ -128,3 +128,114 @@ describe('GET /api/games/:gameId', () => {
     expect(res.body).toHaveProperty('error');
   });
 });
+
+// ─── POST /api/games/:gameId/join ─────────────────────────────────────────────
+
+describe('POST /api/games/:gameId/join', () => {
+  let joinGameId;
+
+  // Crear una partida fresca para cada suite de join
+  beforeAll(async () => {
+    const res = await request(app)
+      .post('/api/games')
+      .send({ categoryId, mode: 'FREE' });
+    joinGameId = res.body.gameId;
+    createdGameIds.push(joinGameId);
+  });
+
+  it('debe unirse exitosamente y devolver 201 con token y crossword', async () => {
+    const res = await request(app)
+      .post(`/api/games/${joinGameId}/join`)
+      .send({ name: 'Ana' });
+
+    expect(res.statusCode).toBe(201);
+    expect(res.body).toHaveProperty('playerId');
+    expect(res.body).toHaveProperty('token');
+    expect(res.body.name).toBe('Ana');
+    expect(res.body.gameId).toBe(joinGameId);
+    expect(res.body).toHaveProperty('crossword');
+    expect(Array.isArray(res.body.crossword.words)).toBe(true);
+  });
+
+  it('el crossword NO debe incluir las respuestas correctas (word)', async () => {
+    const res = await request(app)
+      .post(`/api/games/${joinGameId}/join`)
+      .send({ name: 'Luis' });
+
+    expect(res.statusCode).toBe(201);
+    // Cada palabra debe tener length pero NO el campo 'word'
+    const word = res.body.crossword.words[0];
+    expect(word).toHaveProperty('length');
+    expect(word).not.toHaveProperty('word');
+    expect(word).toHaveProperty('clue');
+    expect(word).toHaveProperty('direction');
+    expect(word).toHaveProperty('row');
+    expect(word).toHaveProperty('col');
+  });
+
+  it('debe devolver 409 si el nombre ya está en uso en la partida', async () => {
+    const res = await request(app)
+      .post(`/api/games/${joinGameId}/join`)
+      .send({ name: 'Ana' }); // Ana ya se unió antes
+
+    expect(res.statusCode).toBe(409);
+    expect(res.body).toHaveProperty('error');
+  });
+
+  it('debe devolver 409 con nombre duplicado en diferente capitalización', async () => {
+    const res = await request(app)
+      .post(`/api/games/${joinGameId}/join`)
+      .send({ name: 'ana' }); // mismo nombre, diferente capitalización
+
+    expect(res.statusCode).toBe(409);
+    expect(res.body).toHaveProperty('error');
+  });
+
+  it('debe devolver 400 si el name está vacío', async () => {
+    const res = await request(app)
+      .post(`/api/games/${joinGameId}/join`)
+      .send({ name: '' });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toHaveProperty('error');
+  });
+
+  it('debe devolver 400 si el name es solo espacios', async () => {
+    const res = await request(app)
+      .post(`/api/games/${joinGameId}/join`)
+      .send({ name: '   ' });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toHaveProperty('error');
+  });
+
+  it('debe devolver 404 si la partida no existe', async () => {
+    const res = await request(app)
+      .post('/api/games/partida-inexistente-99/join')
+      .send({ name: 'Carlos' });
+
+    expect(res.statusCode).toBe(404);
+    expect(res.body).toHaveProperty('error');
+  });
+
+  it('debe devolver 409 al intentar unirse a una partida FINISHED', async () => {
+    // Crear una partida y marcarla como finalizada directamente en Prisma
+    const gameRes = await request(app)
+      .post('/api/games')
+      .send({ categoryId, mode: 'FREE' });
+    const finishedGameId = gameRes.body.gameId;
+    createdGameIds.push(finishedGameId);
+
+    // Simular partida terminada actualizando Redis
+    const { updateGameStatus } = require('../../src/redis/gameState');
+    await updateGameStatus(finishedGameId, 'FINISHED');
+
+    const res = await request(app)
+      .post(`/api/games/${finishedGameId}/join`)
+      .send({ name: 'Maria' });
+
+    expect(res.statusCode).toBe(409);
+    expect(res.body).toHaveProperty('error');
+  });
+});
+
