@@ -239,3 +239,62 @@ describe('POST /api/games/:gameId/join', () => {
   });
 });
 
+// ─── GET /api/games/:gameId/leaderboard ───────────────────────────────────────
+
+describe('GET /api/games/:gameId/leaderboard', () => {
+  let lbGameId;
+
+  beforeAll(async () => {
+    // Crear partida y unir dos jugadores
+    const gameRes = await request(app)
+      .post('/api/games')
+      .send({ categoryId, mode: 'FREE' });
+    lbGameId = gameRes.body.gameId;
+    createdGameIds.push(lbGameId);
+
+    await request(app)
+      .post(`/api/games/${lbGameId}/join`)
+      .send({ name: 'Player1' });
+    await request(app)
+      .post(`/api/games/${lbGameId}/join`)
+      .send({ name: 'Player2' });
+  });
+
+  it('debe devolver 409 si la partida aún no ha terminado', async () => {
+    const res = await request(app).get(`/api/games/${lbGameId}/leaderboard`);
+    expect(res.statusCode).toBe(409);
+    expect(res.body).toHaveProperty('error');
+    expect(res.body).toHaveProperty('status');
+  });
+
+  it('debe devolver 200 con leaderboard ordenado cuando la partida está FINISHED', async () => {
+    // Terminar la partida en DB y Redis
+    const prismaClient = require('../../src/db/prismaClient');
+    await prismaClient.game.update({
+      where: { id: lbGameId },
+      data: { status: 'FINISHED', finishedAt: new Date() },
+    });
+    const { updateGameStatus } = require('../../src/redis/gameState');
+    await updateGameStatus(lbGameId, 'FINISHED');
+
+    const res = await request(app).get(`/api/games/${lbGameId}/leaderboard`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.gameId).toBe(lbGameId);
+    expect(res.body.status).toBe('FINISHED');
+    expect(Array.isArray(res.body.leaderboard)).toBe(true);
+    expect(res.body.leaderboard.length).toBe(2);
+
+    // El primer elemento debe tener rank 1 y los campos correctos
+    const first = res.body.leaderboard[0];
+    expect(first.rank).toBe(1);
+    expect(first).toHaveProperty('playerId');
+    expect(first).toHaveProperty('name');
+    expect(first).toHaveProperty('score');
+  });
+
+  it('debe devolver 404 si la partida no existe', async () => {
+    const res = await request(app).get('/api/games/no-existe-99/leaderboard');
+    expect(res.statusCode).toBe(404);
+    expect(res.body).toHaveProperty('error');
+  });
+});

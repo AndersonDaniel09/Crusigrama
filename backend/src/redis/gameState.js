@@ -115,6 +115,21 @@ async function updatePlayerScore(gameId, playerId, score, timeSpent) {
 }
 
 /**
+ * Incrementa el score de un jugador en 1 acierto de forma atómica.
+ * @param {string} gameId
+ * @param {string} playerId
+ * @returns {number} El nuevo score del jugador.
+ */
+async function incrementPlayerScore(gameId, playerId) {
+  const raw = await redis.hget(keys.players(gameId), playerId);
+  if (!raw) throw new Error(`Jugador ${playerId} no encontrado en partida ${gameId}`);
+  const player = JSON.parse(raw);
+  player.score = (player.score || 0) + 1;
+  await redis.hset(keys.players(gameId), playerId, JSON.stringify(player));
+  return player.score;
+}
+
+/**
  * Devuelve todos los jugadores de la partida con su estado actual.
  * @returns {Array<{id, name, score, timeSpent}>}
  */
@@ -173,6 +188,7 @@ module.exports = {
   getGrid,
   addPlayer,
   updatePlayerScore,
+  incrementPlayerScore,
   getPlayers,
   setTimer,
   getTimer,

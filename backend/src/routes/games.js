@@ -252,4 +252,53 @@ router.post('/:gameId/join', async (req, res, next) => {
   }
 });
 
+// ─── GET /api/games/:gameId/leaderboard ──────────────────────────────────────
+/**
+ * Devuelve la clasificación final de una partida terminada.
+ * Solo disponible cuando status === 'FINISHED'.
+ */
+router.get('/:gameId/leaderboard', async (req, res, next) => {
+  try {
+    const { gameId } = req.params;
+
+    const game = await prisma.game.findUnique({
+      where: { id: gameId },
+      include: {
+        players: {
+          select: { id: true, name: true, score: true, timeSpent: true },
+          orderBy: [{ score: 'desc' }, { timeSpent: 'asc' }],
+        },
+      },
+    });
+
+    if (!game) {
+      return res.status(404).json({ error: `Partida con id "${gameId}" no encontrada.` });
+    }
+
+    if (game.status !== 'FINISHED') {
+      return res.status(409).json({
+        error: 'El leaderboard solo está disponible cuando la partida ha terminado.',
+        status: game.status,
+      });
+    }
+
+    const leaderboard = game.players.map((p, idx) => ({
+      rank: idx + 1,
+      playerId: p.id,
+      name: p.name,
+      score: p.score,
+      timeSpent: p.timeSpent,
+    }));
+
+    return res.status(200).json({
+      gameId,
+      status: game.status,
+      finishedAt: game.finishedAt,
+      leaderboard,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;

@@ -12,6 +12,11 @@ jest.mock('../../src/db/prismaClient', () => ({
   },
 }));
 jest.mock('../../src/redis/gameState');
+// Mock del gameManager para que checkWinCondition no falle
+jest.mock('../../src/services/gameManager', () => ({
+  startGame: jest.fn().mockResolvedValue(),
+  checkWinCondition: jest.fn().mockResolvedValue(),
+}));
 
 describe('Socket.io gameHandler', () => {
   let socketMock;
@@ -99,6 +104,31 @@ describe('Socket.io gameHandler', () => {
         playerId: 'p1',
         correct: true,
       });
+    });
+
+    it('debe emitir stats:update tras un acierto correcto', async () => {
+      verifyToken.mockReturnValue({ gameId: 'g1', playerId: 'p1' });
+      prisma.game.findUnique.mockResolvedValue({
+        crossword: {
+          words: [{ word: 'HOLA', direction: 'ACROSS', row: 0, col: 0 }]
+        }
+      });
+      gameState.incrementPlayerScore.mockResolvedValue(1);
+      gameState.getPlayers.mockResolvedValue([
+        { id: 'p1', name: 'Ana', score: 1 },
+      ]);
+
+      await handleCellUpdate(socketMock, ioMock, {
+        gameId: 'g1', token: 'valid', row: 0, col: 1, letter: 'O'
+      });
+
+      expect(gameState.incrementPlayerScore).toHaveBeenCalledWith('g1', 'p1');
+      expect(ioMock.to).toHaveBeenCalledWith('g1');
+      // stats:update debe haber sido emitido con el ranking
+      const emitCalls = toMock.emit.mock.calls;
+      const statsCall = emitCalls.find(([event]) => event === 'stats:update');
+      expect(statsCall).toBeDefined();
+      expect(statsCall[1][0]).toMatchObject({ rank: 1, playerId: 'p1', name: 'Ana', score: 1 });
     });
 
     it('debe validar la celda y emitir cell:updated con correct:false si es errónea', async () => {
