@@ -4,6 +4,8 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 
 const healthRouter = require('./routes/health');
+const categoriesRouter = require('./routes/categories');
+const gamesRouter = require('./routes/games');
 
 const app = express();
 
@@ -21,11 +23,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // ── Rutas ─────────────────────────────────────────────────────
 app.use('/health', healthRouter);
-
-// Placeholder para las rutas que se agregarán en etapas posteriores
-// app.use('/api/categories', categoriesRouter);  ← Etapa 3
-// app.use('/api/games', gamesRouter);             ← Etapa 3
-// app.use('/api/players', playersRouter);         ← Etapa 4
+app.use('/api/categories', categoriesRouter);
+app.use('/api/games', gamesRouter);
+// app.use('/api/players', playersRouter);  ← Etapa 4
 
 // ── 404 ───────────────────────────────────────────────────────
 app.use((_req, res) => {
