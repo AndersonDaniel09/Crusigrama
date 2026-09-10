@@ -12,7 +12,7 @@ export const getCategories = () =>
 
 /**
  * Crea una nueva partida.
- * @param {{ categoryId: string, mode: 'FREE'|'TIMED', duration?: number }} data
+ * @param {{ categoryId: string, mode: 'FREE'|'TIMED', duration?: number, difficulty?: string, crosswordId?: string }} data
  */
 export const createGame = (data) =>
   api.post('/games', data).then((r) => r.data);
@@ -33,5 +33,13 @@ export const joinGame = (gameId, name) =>
 /** Obtiene el leaderboard final de una partida terminada */
 export const getLeaderboard = (gameId) =>
   api.get(`/games/${gameId}/leaderboard`).then((r) => r.data);
+
+/** Crea un crucigrama personalizado */
+export const createCustomCrossword = (data) =>
+  api.post('/crosswords', data).then((r) => r.data);
+
+/** Genera palabras con IA para un crucigrama */
+export const generateCrosswordWithAI = (topic, difficulty) =>
+  api.post('/ai/generate-crossword', { topic, difficulty }).then((r) => r.data);
 
 export default api;

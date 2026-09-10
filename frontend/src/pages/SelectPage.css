@@ -130,3 +130,24 @@
   padding: 14px 36px;
   align-self: center;
 }
+
+/* ── Section header con botón inline ─── */
+.section-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* ── Dificultad ─── */
+.difficulty-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: rgba(79, 142, 247, 0.05);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(79, 142, 247, 0.15);
+}

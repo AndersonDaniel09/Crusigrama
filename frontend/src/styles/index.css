@@ -7,16 +7,20 @@
 /* ── Variables ────────────────────────────────────────────── */
 :root {
   /* Paleta oscura principal */
-  --bg-base:        #0d0f1a;
-  --bg-surface:     #13162b;
-  --bg-glass:       rgba(255, 255, 255, 0.04);
-  --bg-glass-hover: rgba(255, 255, 255, 0.08);
-  --border-glass:   rgba(255, 255, 255, 0.10);
+  --bg-base:        #080b18;
+  --bg-surface:     #0f1328;
+  --bg-glass:       rgba(255, 255, 255, 0.05);
+  --bg-glass-hover: rgba(255, 255, 255, 0.09);
+  --border-glass:   rgba(255, 255, 255, 0.12);
+
+  /* Alias semánticos */
+  --text:           #f1f5f9;
+  --primary:        #4f8ef7;
 
   /* Acento — azul eléctrico */
   --accent:         #4f8ef7;
   --accent-glow:    rgba(79, 142, 247, 0.35);
-  --accent-dark:    #2563eb;
+  --accent-dark:    #1d4ed8;
 
   /* Acento secundario — violeta */
   --secondary:      #a855f7;
@@ -32,21 +36,21 @@
   /* Texto */
   --text-primary:   #f1f5f9;
   --text-secondary: #94a3b8;
-  --text-muted:     #475569;
+  --text-muted:     #64748b;
 
-  /* Celda crucigrama */
-  --cell-size:      48px;
-  --cell-bg:        #1e2340;
-  --cell-border:    #2d3561;
+  /* Celda crucigrama — más grande y legible */
+  --cell-size:      62px;
+  --cell-bg:        #151b38;
+  --cell-border:    #2a3260;
   --cell-correct:   #14532d;
   --cell-wrong:     #7f1d1d;
   --cell-active:    var(--accent-dark);
 
   /* Dimensiones */
   --radius-sm:    6px;
-  --radius-md:    12px;
-  --radius-lg:    20px;
-  --radius-xl:    28px;
+  --radius-md:    14px;
+  --radius-lg:    22px;
+  --radius-xl:    32px;
 
   /* Transiciones */
   --transition:   0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -58,6 +62,7 @@
 html, body, #root {
   height: 100%;
   font-family: 'Outfit', system-ui, sans-serif;
+  font-size: 17px;
   background: var(--bg-base);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
@@ -93,13 +98,23 @@ input, textarea { font-family: inherit; }
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 12px 24px;
+  padding: 13px 26px;
   border: none;
   border-radius: var(--radius-md);
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 600;
   transition: all var(--transition);
   letter-spacing: 0.02em;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+
+.btn-outline:hover {
+  background: var(--accent-glow);
 }
 
 .btn-primary {

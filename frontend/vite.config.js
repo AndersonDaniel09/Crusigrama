@@ -9,7 +9,7 @@ export default defineConfig({
     // Proxy hacia el backend para evitar problemas de CORS en desarrollo
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'http://localhost:3003',
         changeOrigin: true,
       },
       '/health': {

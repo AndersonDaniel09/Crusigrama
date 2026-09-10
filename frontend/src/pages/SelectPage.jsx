@@ -25,6 +25,7 @@ export default function SelectPage() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedMode, setSelectedMode] = useState('FREE');
   const [duration, setDuration] = useState(120);
+  const [difficulty, setDifficulty] = useState('MEDIUM');
 
   useEffect(() => {
     getCategories()
@@ -41,6 +42,7 @@ export default function SelectPage() {
       const game = await createGame({
         categoryId: selectedCategory,
         mode: selectedMode,
+        difficulty,
         ...(selectedMode === 'TIMED' ? { duration } : {}),
       });
       navigate(`/games/${game.gameId}/lobby`);
@@ -70,7 +72,12 @@ export default function SelectPage() {
       <div className="select-body">
         {/* Categorías */}
         <section className="select-section">
-          <h2 className="section-label">1. Elige una categoría</h2>
+          <div className="section-header-row">
+            <h2 className="section-label">1. Elige una categoría y dificultad</h2>
+            <button className="btn btn-secondary btn-outline" onClick={() => navigate('/create-crossword')}>
+              ✨ Crear Crucigrama Personalizado
+            </button>
+          </div>
           <div className="category-grid">
             {categories.map((cat) => (
               <button
@@ -79,10 +86,18 @@ export default function SelectPage() {
                 onClick={() => setSelectedCategory(cat.id)}
               >
                 <span className="cat-name">{cat.name}</span>
-                <span className="badge badge-accent">{cat.crosswordCount} crucigramas</span>
               </button>
             ))}
           </div>
+
+          {selectedCategory && (
+            <div className="difficulty-row fade-in">
+              <span className="section-label" style={{ marginBottom: 0 }}>Dificultad:</span>
+              <button className={`btn ${difficulty === 'EASY' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setDifficulty('EASY')}>Baja</button>
+              <button className={`btn ${difficulty === 'MEDIUM' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setDifficulty('MEDIUM')}>Media</button>
+              <button className={`btn ${difficulty === 'HARD' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setDifficulty('HARD')}>Alta</button>
+            </div>
+          )}
         </section>
 
         {/* Modo */}

@@ -46,26 +46,42 @@ router.post('/', async (req, res, next) => {
       return res.status(400).json({ errors });
     }
 
-    const { categoryId, mode, duration } = req.body;
+    const { categoryId, mode, duration, difficulty, crosswordId } = req.body;
 
-    // 2. Verificar que la categoría exista
-    const category = await prisma.category.findUnique({
-      where: { id: categoryId },
-      include: { crosswords: { select: { id: true, name: true } } },
-    });
+    let randomCrossword;
 
-    if (!category) {
-      return res.status(404).json({ error: `Categoría con id "${categoryId}" no encontrada.` });
+    if (crosswordId) {
+      randomCrossword = await prisma.crossword.findUnique({
+        where: { id: crosswordId },
+        select: { id: true, name: true }
+      });
+      if (!randomCrossword) {
+        return res.status(404).json({ error: 'Crucigrama no encontrado.' });
+      }
+    } else {
+      // 2. Verificar que la categoría exista
+      const category = await prisma.category.findUnique({
+        where: { id: categoryId },
+        include: { 
+          crosswords: { 
+            where: difficulty ? { difficulty } : {},
+            select: { id: true, name: true } 
+          } 
+        },
+      });
+
+      if (!category) {
+        return res.status(404).json({ error: `Categoría con id "${categoryId}" no encontrada.` });
+      }
+
+      // 3. Verificar que la categoría tenga al menos un crucigrama
+      if (category.crosswords.length === 0) {
+        return res.status(409).json({ error: `No hay crucigramas disponibles para esa categoría/dificultad.` });
+      }
+
+      // 4. Elegir un crucigrama al azar
+      randomCrossword = category.crosswords[Math.floor(Math.random() * category.crosswords.length)];
     }
-
-    // 3. Verificar que la categoría tenga al menos un crucigrama
-    if (category.crosswords.length === 0) {
-      return res.status(409).json({ error: `La categoría "${category.name}" no tiene crucigramas disponibles.` });
-    }
-
-    // 4. Elegir un crucigrama al azar de la categoría
-    const randomCrossword =
-      category.crosswords[Math.floor(Math.random() * category.crosswords.length)];
 
     // 5. Crear el Game en PostgreSQL (Prisma)
     const parsedDuration = mode === 'TIMED' ? parseInt(duration, 10) : null;

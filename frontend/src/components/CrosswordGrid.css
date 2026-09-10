@@ -1,8 +1,8 @@
 .crossword-grid {
   display: inline-grid;
   grid-template-columns: repeat(var(--cols, 10), var(--cell-size));
-  gap: 3px;
-  padding: 16px;
+  gap: 4px;
+  padding: 20px;
   background: rgba(255,255,255,0.03);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
@@ -64,13 +64,14 @@
 .cell-number {
   position: absolute;
   top: 2px;
-  left: 3px;
-  font-size: 9px;
+  left: 4px;
+  font-size: 10px;
   font-weight: 700;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   line-height: 1;
   pointer-events: none;
   z-index: 1;
+  letter-spacing: -0.5px;
 }
 
 /* ── Input de la celda ────────────────────────────────────── */
@@ -83,12 +84,12 @@
   border: none;
   outline: none;
   text-align: center;
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--text-primary);
   caret-color: transparent;
   text-transform: uppercase;
-  padding-top: 6px; /* compensar el número */
+  padding-top: 10px; /* compensar el número */
 }
 
 .cell-correct .cell-input { color: var(--success); }

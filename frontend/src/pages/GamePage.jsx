@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { joinGame } from '../api';
 import { useSocket } from '../hooks/useSocket';
@@ -26,6 +26,26 @@ export default function GamePage() {
   const [timeLeft, setTimeLeft] = useState(null);     // segundos restantes
   const [gameStatus, setGameStatus] = useState('WAITING');
   const wrongTimers = useRef({});
+
+  // Calcular las palabras con su numeración estricta (Horizontales primero, Verticales después)
+  const numberedWords = useMemo(() => {
+    const w = session?.crossword?.words || [];
+    // Deep copy to avoid mutating session storage object
+    const words = JSON.parse(JSON.stringify(w)); 
+    let currentNumber = 1;
+    
+    // Asignar a Horizontales
+    const across = words.filter(word => word.direction === 'ACROSS')
+                        .sort((a, b) => a.row - b.row || a.col - b.col);
+    across.forEach(word => word.number = currentNumber++);
+    
+    // Asignar a Verticales
+    const down = words.filter(word => word.direction === 'DOWN')
+                      .sort((a, b) => a.row - b.row || a.col - b.col);
+    down.forEach(word => word.number = currentNumber++);
+    
+    return words;
+  }, [session?.crossword?.words]);
 
   // Cargar sesión guardada (si ya se unió desde LobbyPage o recarga)
   useEffect(() => {
@@ -153,7 +173,7 @@ export default function GamePage() {
         <main className="game-main">
           <div className="grid-wrapper">
             <CrosswordGrid
-              words={session.crossword?.words || []}
+              words={numberedWords}
               grid={grid}
               correct={correct}
               wrong={wrong}
@@ -165,15 +185,15 @@ export default function GamePage() {
           {/* Pistas */}
           <div className="clues-panel glass">
             {['ACROSS', 'DOWN'].map((dir) => {
-              const dirWords = (session.crossword?.words || []).filter((w) => w.direction === dir);
+              const dirWords = numberedWords.filter((w) => w.direction === dir);
               if (!dirWords.length) return null;
               return (
                 <div key={dir} className="clues-group">
                   <h4 className="clues-title">{dir === 'ACROSS' ? '→ Horizontales' : '↓ Verticales'}</h4>
                   <ul className="clues-list">
-                    {dirWords.map((w, i) => (
+                    {dirWords.map((w) => (
                       <li key={w.id} className="clue-item">
-                        <span className="clue-num">{i + 1}.</span>
+                        <span className="clue-num">{w.number}.</span>
                         <span className="clue-text">{w.clue}</span>
                       </li>
                     ))}

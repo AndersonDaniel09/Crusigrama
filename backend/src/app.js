@@ -6,6 +6,8 @@ const morgan = require('morgan');
 const healthRouter = require('./routes/health');
 const categoriesRouter = require('./routes/categories');
 const gamesRouter = require('./routes/games');
+const crosswordsRouter = require('./routes/crosswords');
+const aiRouter = require('./routes/ai');
 
 const app = express();
 
@@ -25,7 +27,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/health', healthRouter);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/games', gamesRouter);
-// app.use('/api/players', playersRouter);  ← Etapa 4
+app.use('/api/crosswords', crosswordsRouter);
+app.use('/api/ai', aiRouter);
 
 // ── 404 ───────────────────────────────────────────────────────
 app.use((_req, res) => {

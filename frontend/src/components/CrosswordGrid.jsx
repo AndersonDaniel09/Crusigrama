@@ -15,19 +15,40 @@ import './CrosswordGrid.css';
 export default function CrosswordGrid({ words = [], grid = {}, correct = {}, wrong = {}, readOnly = false, onCell }) {
   const inputRefs = useRef({});
 
-  // Calcular las dimensiones del grid
+  // Calcular las dimensiones del grid y asignar números estrictos a las palabras
   const { cells, maxRow, maxCol } = useMemo(() => {
     const cells = new Map();
     let maxRow = 0, maxCol = 0;
 
+    // 1. Asignar números secuenciales estrictos (Horizontales primero, luego Verticales)
+    let currentNumber = 1;
+    
+    // Filtrar y ordenar Horizontales (ACROSS)
+    const acrossWords = words.filter(w => w.direction === 'ACROSS')
+                             .sort((a, b) => a.row - b.row || a.col - b.col);
+    acrossWords.forEach(w => w.number = currentNumber++);
+
+    // Filtrar y ordenar Verticales (DOWN)
+    const downWords = words.filter(w => w.direction === 'DOWN')
+                           .sort((a, b) => a.row - b.row || a.col - b.col);
+    downWords.forEach(w => w.number = currentNumber++);
+
+    // 2. Construir el grid de celdas
     words.forEach((w) => {
       for (let i = 0; i < w.length; i++) {
         const r = w.direction === 'DOWN'   ? w.row + i : w.row;
         const c = w.direction === 'ACROSS' ? w.col + i : w.col;
         const key = `${r}:${c}`;
-        if (!cells.has(key)) cells.set(key, { row: r, col: c, number: null });
-        // Marcar inicio de palabra con su número
-        if (i === 0) cells.get(key).number = cells.size;
+        
+        if (!cells.has(key)) {
+          cells.set(key, { row: r, col: c, numbers: [] });
+        }
+        
+        // Marcar inicio de palabra con su número asignado
+        if (i === 0) {
+          cells.get(key).numbers.push(w.number);
+        }
+        
         maxRow = Math.max(maxRow, r);
         maxCol = Math.max(maxCol, c);
       }
@@ -81,7 +102,9 @@ export default function CrosswordGrid({ words = [], grid = {}, correct = {}, wro
                 isWrong   ? 'cell-wrong'   : '',
               ].join(' ')}
             >
-              {cell.number && <span className="cell-number">{cell.number}</span>}
+              {cell.numbers && cell.numbers.length > 0 && (
+                <span className="cell-number">{cell.numbers.join('/')}</span>
+              )}
               <input
                 ref={(el) => { inputRefs.current[key] = el; }}
                 className="cell-input"
