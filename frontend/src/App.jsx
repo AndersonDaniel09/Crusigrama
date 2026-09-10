@@ -1,19 +1,26 @@
-import { Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage.jsx';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import SelectPage  from './pages/SelectPage.jsx';
+import LobbyPage   from './pages/LobbyPage.jsx';
+import GamePage    from './pages/GamePage.jsx';
+import ResultsPage from './pages/ResultsPage.jsx';
 
-/**
- * Rutas de la aplicación.
- * Se irán agregando en etapas posteriores:
- *   /categories        → Etapa 9
- *   /games/new         → Etapa 9
- *   /play/:gameId      → Etapa 9
- *   /results/:gameId   → Etapa 9
- */
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
-      {/* Placeholder — rutas completas en Etapa 9 */}
+      {/* Selección de categoría y modo */}
+      <Route path="/"                        element={<SelectPage />} />
+
+      {/* Lobby tras crear partida: comparte el enlace y entra */}
+      <Route path="/games/:gameId/lobby"     element={<LobbyPage />} />
+
+      {/* Tablero de juego en tiempo real */}
+      <Route path="/play/:gameId"            element={<GamePage />} />
+
+      {/* Resultados finales */}
+      <Route path="/results/:gameId"         element={<ResultsPage />} />
+
+      {/* Cualquier ruta desconocida → home */}
+      <Route path="*"                        element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

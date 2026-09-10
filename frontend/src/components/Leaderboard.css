@@ -1,0 +1,70 @@
+.leaderboard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lb-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+
+.lb-empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 12px 0;
+}
+
+.lb-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lb-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: var(--bg-glass);
+  border: 1px solid transparent;
+  transition: all var(--transition);
+  animation: fadeIn 0.3s ease;
+}
+
+.lb-row--me {
+  border-color: var(--accent);
+  background: rgba(79, 142, 247, 0.08);
+}
+
+.lb-rank {
+  font-size: 1rem;
+  min-width: 28px;
+}
+
+.lb-name {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lb-name em {
+  color: var(--accent);
+  font-style: normal;
+  font-size: 0.8rem;
+}
+
+.lb-score {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--success);
+}

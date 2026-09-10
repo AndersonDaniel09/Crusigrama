@@ -1,0 +1,177 @@
+/* ── Join screen ──────────────────────────────────────────── */
+.game-join-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.game-join-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.game-join-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.game-join-sub { color: var(--text-secondary); font-size: 0.9rem; }
+.join-error    { color: var(--error); font-size: 0.88rem; }
+
+/* ── Layout principal ─────────────────────────────────────── */
+.game-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-glass);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.game-header-left, .game-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.game-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.game-player-chip {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  background: var(--bg-glass);
+  padding: 4px 10px;
+  border-radius: 100px;
+  border: 1px solid var(--border-glass);
+}
+
+/* ── Timer ────────────────────────────────────────────────── */
+.timer {
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  background: var(--bg-glass);
+  padding: 4px 14px;
+  border-radius: 100px;
+  border: 1px solid var(--border-glass);
+  transition: color var(--transition), border-color var(--transition);
+}
+
+.timer--urgent {
+  color: var(--error);
+  border-color: var(--error);
+  animation: pulse-glow 0.6s infinite;
+}
+
+/* ── Body ─────────────────────────────────────────────────── */
+.game-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Main (grid + pistas) ─────────────────────────────────── */
+.game-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.grid-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+/* ── Pistas ───────────────────────────────────────────────── */
+.clues-panel {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+  border-radius: var(--radius-lg);
+}
+
+.clues-group { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 180px; }
+
+.clues-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+
+.clues-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+
+.clue-item {
+  display: flex;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.clue-num {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 20px;
+}
+
+/* ── Sidebar ──────────────────────────────────────────────── */
+.game-sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-left: 1px solid var(--border-glass);
+  overflow: hidden;
+}
+
+.sidebar-panel {
+  padding: 16px;
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid var(--border-glass);
+  background: var(--bg-surface);
+}
+
+.sidebar-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .game-sidebar { display: none; }
+}

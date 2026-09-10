@@ -1,0 +1,132 @@
+.select-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.select-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.select-title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 12px;
+}
+
+.title-accent {
+  background: linear-gradient(135deg, var(--accent), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.select-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.select-body {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.select-section { display: flex; flex-direction: column; gap: 16px; }
+
+.section-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+/* ── Categorías ─── */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.category-card {
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  cursor: pointer;
+  border: 1px solid var(--border-glass);
+  transition: all var(--transition);
+}
+
+.category-card:hover { transform: translateY(-2px); }
+
+.category-card.selected {
+  border-color: var(--accent);
+  background: rgba(79, 142, 247, 0.10);
+  box-shadow: 0 0 0 1px var(--accent), 0 4px 20px var(--accent-glow);
+}
+
+.cat-name {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* ── Modos ─── */
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.mode-card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  cursor: pointer;
+  border: 1px solid var(--border-glass);
+  transition: all var(--transition);
+  text-align: left;
+}
+
+.mode-card.selected {
+  border-color: var(--secondary);
+  background: rgba(168, 85, 247, 0.08);
+  box-shadow: 0 0 0 1px var(--secondary), 0 4px 16px var(--secondary-glow);
+}
+
+.mode-icon  { font-size: 1.6rem; }
+.mode-label { font-size: 1rem; font-weight: 700; }
+.mode-desc  { font-size: 0.82rem; color: var(--text-secondary); }
+
+/* ── Duración ─── */
+.duration-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ── Error y botón ─── */
+.select-error {
+  color: var(--error);
+  font-size: 0.9rem;
+  padding: 10px 14px;
+  background: var(--error-glow);
+  border-radius: var(--radius-md);
+}
+
+.btn-create {
+  font-size: 1.05rem;
+  padding: 14px 36px;
+  align-self: center;
+}
